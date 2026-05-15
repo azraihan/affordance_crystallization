@@ -84,7 +84,7 @@ MODELS = {
 # ── Dataset ────────────────────────────────────────────────────────────────────
 AFFORDANCE_CLASSES   = ["grasp", "cut", "scoop", "wrap-grasp", "poke", "support", "contain"]
 NUM_AFFORDANCES      = len(AFFORDANCE_CLASSES)    # 7
-AFFORDANCE_THRESHOLD = 0.05   # label is positive if >5% of pixels belong to that class
+AFFORDANCE_THRESHOLD = 0.001  # label is positive if >0.1% of pixels belong to that class (~307 px in 480×640)
 
 IMG_RESIZE   = 224
 BATCH_SIZE   = 16     # ViT-L is large; reduce to 8 if VRAM is tight

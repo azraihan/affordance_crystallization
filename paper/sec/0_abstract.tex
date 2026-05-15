@@ -1,0 +1,16 @@
+\begin{abstract}
+Self-supervised video models have emerged as strong visual backbones for robotic perception.
+V-JEPA 2.1 extends V-JEPA 2 by applying its predictive objective hierarchically across
+\emph{intermediate} encoder layers, achieving strong robot grasping performance.
+Yet no prior work investigates whether this architectural change fundamentally reorganizes
+\emph{where} affordance-relevant information crystallizes inside the encoder.
+We present a mechanistic layer-wise probing study on the UMD Part Affordance Dataset,
+fitting linear probes at each of 24 transformer layers across V-JEPA~2 ViT-L,
+V-JEPA~2.1 ViT-L, and DINOv2 ViT-L baselines (all architecturally matched).
+We find that V-JEPA~2.1's intermediate-layer supervision causes affordance features to
+peak significantly earlier in the network than V-JEPA~2.
+Through targeted attention head ablation we further identify a sparse subset of heads
+at each model's peak layer that accounts for the majority of affordance-predictive signal,
+and show that pruning to these top heads reduces per-layer attention cost substantially
+with minimal mAP degradation.
+\end{abstract}

@@ -1,0 +1,56 @@
+\section{Method}
+\label{sec:method}
+
+\subsection{Layer-wise Linear Probing}
+
+Let $f_\theta$ be a frozen ViT-L encoder with $L=24$ transformer blocks.
+For an input $\mathbf{x}$, denote by $\mathbf{h}^{(\ell)} \in \mathbb{R}^{S \times D}$
+the hidden states after block $\ell$ ($S$ = sequence length, $D=1024$).
+We use the \texttt{[CLS]} token for DINOv2, and mean-pooled tokens for JEPA models
+(which have no designated CLS token).
+
+For each layer $\ell \in \{0, 1, \ldots, 24\}$ (where $\ell=0$ is the patch embedding),
+we train a separate \texttt{OneVsRest} logistic regression to predict the seven-dimensional
+binary affordance label $\mathbf{y} \in \{0,1\}^7$, reporting mean Average Precision
+(mAP) on the held-out test set.
+
+\subsection{Attention Head Ablation}
+
+At each model's peak layer $\ell^*$ (highest mAP), we perform targeted ablation.
+For head $h$ (with head dimension $d_h = D / H$, $H=16$), we zero the corresponding
+$d_h$ columns \emph{in the attention output before the output projection}
+(following Michel et al.~\cite{michel2019sixteen}).
+Concretely, we hook \texttt{block.attn.proj} with a forward pre-hook
+that zeros columns $[h{\cdot}d_h\;:\;(h{+}1){\cdot}d_h]$ of the input.
+This removes head $h$'s contribution without affecting the MLP or other heads.
+After ablation, we re-extract the peak-layer features and retrain a linear probe.
+Head importance: $\Delta_h = \text{mAP}_{\text{full}} - \text{mAP}_{-h}$.
+
+\subsection{Pruning Efficiency}
+
+We retain only the top-$k$ heads (by importance) at $\ell^*$, zeroing the rest.
+Attention compute scales linearly with the number of active heads,
+giving an approximate $H/k\times$ speedup in that layer's attention module.
+
+\subsection{Experimental Setup}
+
+\noindent\textbf{Dataset.}
+UMD Part Affordance Dataset (tools split)~\cite{myers2015affordance},
+80/10/10 stratified split by object category.
+Images resized to $224\!\times\!224$, normalized with ImageNet statistics.
+An image is labeled with affordance $i$ if $>0.1\%$ of its pixels carry label $i$
+(approximately 307 pixels in a $480{\times}640$ image), reflecting the part-level nature
+of UMD annotations where affordance regions cover small tool parts rather than whole objects.
+
+\noindent\textbf{Models.}
+V-JEPA~2 ViT-L and V-JEPA~2.1 ViT-L ($D=1024$, $L=24$, $H=16$) loaded from
+official Meta checkpoints.\footnote{V-JEPA~2 ViT-B was not publicly released;
+we use ViT-L for both models to ensure a fair, architecturally matched comparison.}
+For JEPA models, a static image is replicated $T=8$ times to form a pseudo-video.
+DINOv2 ViT-L serves as the static-image self-supervised baseline.
+A randomly initialized ViT-L establishes the chance-level floor.
+All encoders are \textbf{frozen}.
+
+\noindent\textbf{Probe.}
+L-BFGS logistic regression ($C=1.0$, max\_iter$=1000$).
+Single NVIDIA P100 GPU (16\,GB).

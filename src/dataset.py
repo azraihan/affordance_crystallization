@@ -2,9 +2,14 @@
 PyTorch Dataset for the UMD Part Affordance Dataset (tools split).
 Returns (image_tensor, label_vector) pairs.
 label_vector: float32 tensor of shape (7,), binary multi-label.
+
+Dataset layout (actual):
+  tools/<category>/<stem>_rgb.jpg
+  tools/<category>/<stem>_label.mat   # gt_label key, uint8 H×W, values 0–7
 """
 import random
 import numpy as np
+import scipy.io
 from collections import defaultdict
 from pathlib import Path
 from typing import List, Tuple, Optional
@@ -48,14 +53,15 @@ def build_label_from_mask(mask: np.ndarray) -> np.ndarray:
 
 def collect_samples(root: Path) -> List[Tuple[Path, Path]]:
     """
-    Walk tools/<category>/rgb/*.jpg and pair with tools/<category>/label/<stem>.png.
+    Walk tools/<category>/*_rgb.jpg and pair with same-directory *_label.mat.
     Skips any image whose label file is missing.
     """
-    rgb_paths = sorted(root.glob("tools/*/rgb/*.jpg")) + \
-                sorted(root.glob("tools/*/rgb/*.png"))
+    rgb_paths = sorted(root.glob("tools/*/*_rgb.jpg")) + \
+                sorted(root.glob("tools/*/*_rgb.png"))
     samples = []
     for rgb_p in rgb_paths:
-        label_p = rgb_p.parent.parent / "label" / (rgb_p.stem + ".png")
+        label_stem = rgb_p.stem.replace("_rgb", "_label")
+        label_p = rgb_p.parent / (label_stem + ".mat")
         if label_p.exists():
             samples.append((rgb_p, label_p))
     return samples
@@ -75,7 +81,7 @@ def split_samples(
 
     by_cat: dict = defaultdict(list)
     for rgb_p, label_p in samples:
-        cat = rgb_p.parent.parent.name   # tools/<category>/rgb/img.jpg
+        cat = rgb_p.parent.name   # tools/<category>/img_rgb.jpg
         by_cat[cat].append((rgb_p, label_p))
 
     if max_total is not None:
@@ -121,9 +127,7 @@ class UMDAffordanceDataset(Dataset):
         img = Image.open(rgb_p).convert("RGB")
         img_tensor = self.transform(img)   # (3, H, W)
 
-        mask = np.array(Image.open(label_p))
-        if mask.ndim == 3:
-            mask = mask[:, :, 0]
+        mask = scipy.io.loadmat(str(label_p))["gt_label"]   # uint8 H×W, values 0–7
         label = build_label_from_mask(mask)
 
         return img_tensor, torch.from_numpy(label)

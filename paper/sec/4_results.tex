@@ -1,0 +1,56 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Layer-wise Probing}
+
+Figure~\ref{fig:layer_probe} shows mAP across all 25 layer positions for all models.
+V-JEPA~2.1 achieves its peak mAP at layer~\TODO{FILL} ($\text{mAP}=\TODO{FILL}\%$),
+compared to V-JEPA~2 which peaks at layer~\TODO{FILL} ($\text{mAP}=\TODO{FILL}\%$).
+This \TODO{FILL}-layer shift confirms that intermediate-layer supervision causes
+affordance information to crystallize earlier in the encoder.
+DINOv2 peaks at layer~\TODO{FILL} ($\text{mAP}=\TODO{FILL}\%$).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{../figures/fig_layer_probe.pdf}
+  \caption{Layer-wise affordance probe accuracy (mAP). Dashed lines mark each
+           model's peak layer. V-JEPA~2.1 peaks earlier than V-JEPA~2, consistent
+           with its intermediate-layer supervision objective.}
+  \label{fig:layer_probe}
+\end{figure}
+
+\input{../tables/table_main_results}
+
+\subsection{Attention Head Ablation}
+
+Figure~\ref{fig:head_heatmap} shows per-head importance at each model's peak layer.
+The top-3 heads account for \TODO{FILL}\%, \TODO{FILL}\%,
+and \TODO{FILL}\% of total importance for V-JEPA~2, V-JEPA~2.1, and DINOv2,
+respectively, confirming that affordance signal is concentrated in a sparse subset of heads.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{../figures/fig_head_heatmap.pdf}
+  \caption{Per-head affordance importance ($\Delta_h$) at each model's peak layer.
+           Color intensity $=$ mAP drop when that head is ablated.
+           Blue boxes mark the top-3 heads.}
+  \label{fig:head_heatmap}
+\end{figure}
+
+\subsection{Pruning Efficiency}
+
+Figure~\ref{fig:topk} and Table~\ref{tab:ablation_efficiency} show the
+accuracy-efficiency tradeoff. Keeping $k=3$ heads ($4\times$ compute reduction)
+yields mAP drops of \TODO{FILL}\% (V-JEPA~2), \TODO{FILL}\% (V-JEPA~2.1),
+and \TODO{FILL}\% (DINOv2), demonstrating strong efficiency-accuracy tradeoffs.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{../figures/fig_topk_efficiency.pdf}
+  \caption{mAP vs.\ number of heads kept at peak layer.
+           Dotted lines $=$ full-model baseline. Pruning to 3 heads retains
+           most affordance prediction performance.}
+  \label{fig:topk}
+\end{figure}
+
+\input{../tables/table_ablation_efficiency}

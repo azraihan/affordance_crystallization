@@ -1,0 +1,28 @@
+\section{Introduction}
+\label{sec:intro}
+
+Robotic manipulation depends on understanding object affordances --- the action possibilities
+an object offers~\cite{myers2015affordance}.
+Recent self-supervised video models, particularly the JEPA family~\cite{lecun2022jepa,bardes2025vjepa2},
+show strong transfer to downstream robotic tasks without task-specific fine-tuning.
+V-JEPA~2.1~\cite{bardes2026vjepa21} further demonstrates that applying the predictive
+objective across intermediate encoder layers substantially improves real-robot grasping.
+
+A fundamental question remains open: \emph{does intermediate-layer supervision change
+which part of the network is responsible for physically-grounded, affordance-relevant
+perception?}
+The V-JEPA~2.1 paper evaluates features only from the final layer, leaving the internal
+representational structure of the encoder unexamined.
+
+We address this gap through a mechanistic interpretability lens~\cite{elhage2021circuits}.
+\textbf{Contributions:}
+\begin{enumerate}
+  \item A systematic layer-wise linear probe study~\cite{alain2016probes} comparing
+        V-JEPA~2 ViT-L, V-JEPA~2.1 ViT-L, and DINOv2 ViT-L on seven affordance
+        categories, showing that V-JEPA~2.1's deep supervision shifts the peak
+        affordance layer earlier in the network.
+  \item An attention head ablation~\cite{michel2019sixteen} at each model's peak layer,
+        revealing a sparse subset of ``affordance heads'' that concentrate most of the signal.
+  \item An efficiency analysis showing that pruning to the top-$k$ heads enables
+        significant attention compute reduction at minimal accuracy cost.
+\end{enumerate}

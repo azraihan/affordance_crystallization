@@ -1,0 +1,22 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Video self-supervised learning.}
+V-JEPA~2~\cite{bardes2025vjepa2} trains a video encoder by predicting masked spatio-temporal
+regions in a learned latent space.
+V-JEPA~2.1~\cite{bardes2026vjepa21} extends this with a Dense Predictive Loss applied
+hierarchically at intermediate layers, leading to a 20-point improvement in robot grasping.
+DINOv2~\cite{oquab2024dinov2} provides a strong static-image self-supervised baseline.
+
+\paragraph{Mechanistic interpretability.}
+Elhage et al.~\cite{elhage2021circuits} establish a mathematical framework for understanding
+which computational structures within transformers carry specific information.
+Michel et al.~\cite{michel2019sixteen} show that most attention heads in BERT can be pruned
+without accuracy loss, identifying a small set of important heads.
+Alain and Bengio~\cite{alain2016probes} introduce linear classifier probes for localizing
+information across network layers.
+
+\paragraph{Affordance detection.}
+Myers et al.~\cite{myers2015affordance} introduce the UMD Part Affordance Dataset.
+No prior work examines which transformer layers or heads carry affordance information
+in frozen video encoders.

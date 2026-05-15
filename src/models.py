@@ -300,7 +300,13 @@ def make_ablation_hooks(
             hs = hs.clone()
             for h in heads_to_zero:
                 hs[:, :, h * head_dim:(h + 1) * head_dim] = 0.0
-        collection_buffer.append(hs.mean(dim=1).detach().cpu().numpy())  # (N, D)
+        # Match the representation used during feature extraction:
+        # DINOv2 uses CLS token (index 0); V-JEPA uses mean over all tokens.
+        if model_type in ("dinov2", "random"):
+            rep = hs[:, 0, :].detach().cpu().numpy()       # CLS token: (N, D)
+        else:
+            rep = hs.mean(dim=1).detach().cpu().numpy()    # mean pool: (N, D)
+        collection_buffer.append(rep)
 
     handles.append(block.register_forward_hook(collect_hook))
     return handles

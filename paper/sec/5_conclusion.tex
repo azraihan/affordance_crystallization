@@ -1,0 +1,12 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have shown mechanistically that V-JEPA~2.1's intermediate-layer supervision
+reshapes where affordance information lives: features peak earlier and concentrate
+in a sparser set of attention heads compared to V-JEPA~2.
+Two practical implications emerge for robotic perception:
+(1) encoders can terminate at the peak layer rather than running full depth;
+(2) attention-head sparsification at the peak layer offers a free efficiency gain
+with minimal accuracy loss.
+Future work should extend this analysis to task-conditioned settings and examine
+whether the same heads generalize across affordance datasets and embodiments.

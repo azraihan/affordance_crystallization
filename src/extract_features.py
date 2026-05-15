@@ -36,6 +36,10 @@ def extract_and_save(
     extractor: FeatureExtractor,
     batch_size: int,
 ):
+    if len(dataset) == 0:
+        print(f"  Skipping {split} split (empty — normal in test mode with many categories).")
+        return
+
     out_dir = FEATURE_DIR / model_key
     out_dir.mkdir(parents=True, exist_ok=True)
 
