@@ -1,8 +1,5 @@
-# torch/torchvision pinned for Kaggle P100 (sm_60) compatibility.
-# P100 requires PyTorch <=2.3 with cu118. T4/A100 users can remove the upper bound.
-# See: https://pytorch.org/get-started/locally/
-torch>=2.2.0,<2.4.0
-torchvision>=0.17.0,<0.19.0
+torch>=2.2.0
+torchvision>=0.17.0
 transformers>=4.40.0
 timm>=0.9.12
 scikit-learn>=1.4.0
