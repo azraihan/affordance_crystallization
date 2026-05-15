@@ -126,10 +126,12 @@ def ablate_model(model_key: str, test_mode: bool = False):
 
     print(f"\n=== Ablating {model_key} | peak_layer={peak_layer} | num_heads={num_heads} ===")
 
-    # Load dataset (same split used during probing)
-    # Use small dataset in test mode
-    max_total  = 200 if test_mode else None
-    train_ds, _, test_ds = get_datasets(max_total=max_total)
+    # Dataset must use the same split as feature extraction so that y_train / y_test
+    # from saved features align with the ablation loader's sample order and count.
+    if test_mode:
+        train_ds, _, test_ds = get_datasets(max_total=200)
+    else:
+        train_ds, _, test_ds = get_datasets()
 
     b  = 4 if test_mode else 16
     nw = 0 if test_mode else 4

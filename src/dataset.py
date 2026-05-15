@@ -21,7 +21,7 @@ import torchvision.transforms as T
 
 from config import (DATA_ROOT, AFFORDANCE_CLASSES, NUM_AFFORDANCES,
                     AFFORDANCE_THRESHOLD, IMG_RESIZE, SEED,
-                    TRAIN_SPLIT, VAL_SPLIT)
+                    TRAIN_SPLIT, VAL_SPLIT, SUBSAMPLE_N)
 
 
 def find_dataset_root(base: Path) -> Path:
@@ -85,11 +85,27 @@ def split_samples(
         by_cat[cat].append((rgb_p, label_p))
 
     if max_total is not None:
-        frac = max_total / len(samples)
-        for cat in by_cat:
-            n_keep = max(3, int(len(by_cat[cat]) * frac))
+        # Proportional allocation: each category keeps (cat_size / total) * max_total items.
+        # Use floor first, then distribute the leftover slots to categories with the largest
+        # fractional remainders, so the final count is exactly max_total.
+        total_pool = len(samples)
+        frac = max_total / total_pool
+        cats = list(by_cat.keys())
+
+        floors = {cat: max(1, int(len(by_cat[cat]) * frac)) for cat in cats}
+        leftover = max_total - sum(floors.values())
+        # Sort by fractional remainder descending to allocate leftover slots fairly
+        remainders = sorted(
+            cats,
+            key=lambda c: (len(by_cat[c]) * frac - floors[c]),
+            reverse=True,
+        )
+        for cat in remainders[:max(0, leftover)]:
+            floors[cat] += 1
+
+        for cat in cats:
             random.shuffle(by_cat[cat])
-            by_cat[cat] = by_cat[cat][:n_keep]
+            by_cat[cat] = by_cat[cat][: floors[cat]]
 
     train, val, test = [], [], []
     for cat, items in by_cat.items():
@@ -133,7 +149,7 @@ class UMDAffordanceDataset(Dataset):
         return img_tensor, torch.from_numpy(label)
 
 
-def get_datasets(data_root: Path = DATA_ROOT, max_total: Optional[int] = None):
+def get_datasets(data_root: Path = DATA_ROOT, max_total: Optional[int] = SUBSAMPLE_N):
     """Returns (train_dataset, val_dataset, test_dataset).
     max_total: if set, subsample to this many images total (for --test mode).
     """

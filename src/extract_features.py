@@ -44,6 +44,13 @@ def extract_and_save(
     out_dir = FEATURE_DIR / model_key
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # Skip the entire split if every layer file is already present.
+    num_layers = extractor.num_layers
+    existing = [out_dir / f"{split}_layer{i:02d}.npz" for i in range(num_layers + 1)]
+    if all(p.exists() for p in existing):
+        print(f"  [SKIP] All {num_layers + 1} layer files for {split} already exist.")
+        return
+
     loader = DataLoader(
         dataset, batch_size=batch_size, shuffle=False,
         num_workers=num_workers, pin_memory=(torch.cuda.is_available() and num_workers > 0),
@@ -63,8 +70,11 @@ def extract_and_save(
     np.save(out_dir / f"{split}_labels.npy", labels_np)
 
     for layer_idx in sorted(per_layer.keys()):
-        feats_np = np.concatenate(per_layer[layer_idx], axis=0)   # (N, D)
         out_path = out_dir / f"{split}_layer{layer_idx:02d}.npz"
+        if out_path.exists():
+            print(f"  [SKIP] {out_path.name} already exists.")
+            continue
+        feats_np = np.concatenate(per_layer[layer_idx], axis=0)   # (N, D)
         np.savez_compressed(out_path, features=feats_np, labels=labels_np)
         print(f"  Saved {out_path} — shape {feats_np.shape}")
 
@@ -79,7 +89,6 @@ def main():
     model_key  = args.model
     is_test    = args.test
     batch_size = TEST_BATCH_SIZE if is_test else BATCH_SIZE
-    max_total  = TEST_N_SAMPLES  if is_test else None
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device} | test_mode: {is_test}")
@@ -88,7 +97,12 @@ def main():
     extractor = FeatureExtractor(model_key, device)
 
     print("\n=== Loading dataset ===")
-    train_ds, val_ds, test_ds = get_datasets(max_total=max_total)
+    # In test mode pass an explicit tiny count; otherwise rely on the SUBSAMPLE_N
+    # default in get_datasets() so extraction always matches probing and ablation.
+    if is_test:
+        train_ds, val_ds, test_ds = get_datasets(max_total=TEST_N_SAMPLES)
+    else:
+        train_ds, val_ds, test_ds = get_datasets()
 
     nw = 0 if is_test else NUM_WORKERS
     for split_name, ds in [("train", train_ds), ("val", val_ds), ("test", test_ds)]:

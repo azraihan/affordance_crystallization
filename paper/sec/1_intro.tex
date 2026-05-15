@@ -1,28 +1,25 @@
 \section{Introduction}
 \label{sec:intro}
 
-Robotic manipulation depends on understanding object affordances --- the action possibilities
+Robotic manipulation requires understanding object affordances --- the action possibilities
 an object offers~\cite{myers2015affordance}.
-Recent self-supervised video models, particularly the JEPA family~\cite{lecun2022jepa,bardes2025vjepa2},
-show strong transfer to downstream robotic tasks without task-specific fine-tuning.
-V-JEPA~2.1~\cite{bardes2026vjepa21} further demonstrates that applying the predictive
-objective across intermediate encoder layers substantially improves real-robot grasping.
+Self-supervised video models, especially the JEPA family~\cite{lecun2022jepa,bardes2025vjepa2},
+transfer strongly to robotic tasks without task-specific fine-tuning.
+V-JEPA~2.1~\cite{bardes2026vjepa21} introduces a Dense Predictive Loss applied
+hierarchically at intermediate encoder layers, yielding a 20-point grasping improvement
+over V-JEPA~2 --- yet evaluates only final-layer features, leaving internal representational
+structure unexamined.
 
-A fundamental question remains open: \emph{does intermediate-layer supervision change
-which part of the network is responsible for physically-grounded, affordance-relevant
-perception?}
-The V-JEPA~2.1 paper evaluates features only from the final layer, leaving the internal
-representational structure of the encoder unexamined.
+Prior mechanistic interpretability work~\cite{alain2016probes,elhage2021circuits} shows
+that specific layers and attention heads carry task-relevant information, and that most
+heads can be pruned without accuracy loss~\cite{michel2019sixteen} --- but this has
+never been studied for affordance features in frozen video encoders.
+DINOv2~\cite{oquab2024dinov2} provides our static-image self-supervised baseline.
 
-We address this gap through a mechanistic interpretability lens~\cite{elhage2021circuits}.
-\textbf{Contributions:}
-\begin{enumerate}
-  \item A systematic layer-wise linear probe study~\cite{alain2016probes} comparing
-        V-JEPA~2 ViT-L, V-JEPA~2.1 ViT-L, and DINOv2 ViT-L on seven affordance
-        categories, showing that V-JEPA~2.1's deep supervision shifts the peak
-        affordance layer earlier in the network.
-  \item An attention head ablation~\cite{michel2019sixteen} at each model's peak layer,
-        revealing a sparse subset of ``affordance heads'' that concentrate most of the signal.
-  \item An efficiency analysis showing that pruning to the top-$k$ heads enables
-        significant attention compute reduction at minimal accuracy cost.
-\end{enumerate}
+We make three contributions:
+(1) a layer-wise linear probe study (layers 0--24) comparing V-JEPA~2, V-JEPA~2.1,
+and DINOv2 ViT-L on seven affordance classes, showing that intermediate-layer supervision
+shifts the peak affordance layer earlier;
+(2) an attention head ablation at each model's peak layer, revealing a sparse set of
+``affordance heads''; and
+(3) a pruning efficiency analysis showing significant compute reduction at minimal accuracy cost.
