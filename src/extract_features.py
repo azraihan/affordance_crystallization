@@ -35,6 +35,7 @@ def extract_and_save(
     dataset,
     extractor: FeatureExtractor,
     batch_size: int,
+    num_workers: int = NUM_WORKERS,
 ):
     if len(dataset) == 0:
         print(f"  Skipping {split} split (empty — normal in test mode with many categories).")
@@ -45,7 +46,7 @@ def extract_and_save(
 
     loader = DataLoader(
         dataset, batch_size=batch_size, shuffle=False,
-        num_workers=NUM_WORKERS, pin_memory=torch.cuda.is_available(),
+        num_workers=num_workers, pin_memory=(torch.cuda.is_available() and num_workers > 0),
     )
 
     # Accumulate per-layer: {layer_idx: [batch_arrays...]}
@@ -89,8 +90,9 @@ def main():
     print("\n=== Loading dataset ===")
     train_ds, val_ds, test_ds = get_datasets(max_total=max_total)
 
+    nw = 0 if is_test else NUM_WORKERS
     for split_name, ds in [("train", train_ds), ("val", val_ds), ("test", test_ds)]:
-        extract_and_save(model_key, split_name, ds, extractor, batch_size)
+        extract_and_save(model_key, split_name, ds, extractor, batch_size, num_workers=nw)
 
     print(f"\n=== Done. Features saved to {FEATURE_DIR / model_key} ===")
 

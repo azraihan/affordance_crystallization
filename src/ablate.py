@@ -131,9 +131,10 @@ def ablate_model(model_key: str, test_mode: bool = False):
     max_total  = 200 if test_mode else None
     train_ds, _, test_ds = get_datasets(max_total=max_total)
 
-    b = 4 if test_mode else 16
-    train_loader = DataLoader(train_ds, batch_size=b, shuffle=False, num_workers=4)
-    test_loader  = DataLoader(test_ds,  batch_size=b, shuffle=False, num_workers=4)
+    b  = 4 if test_mode else 16
+    nw = 0 if test_mode else 4
+    train_loader = DataLoader(train_ds, batch_size=b, shuffle=False, num_workers=nw)
+    test_loader  = DataLoader(test_ds,  batch_size=b, shuffle=False, num_workers=nw)
 
     # Baseline: use saved features (no ablation)
     X_train_base, y_train = load_saved_features(model_key, "train", peak_layer)
