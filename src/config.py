@@ -98,7 +98,7 @@ VAL_SPLIT    = 0.10
 # Stratified by object category so every category keeps proportional representation.
 # Set to None to use the full ~28 K image dataset (~4 h extraction per model on T4).
 # 2 000 images: ~19 per category, stable mAP estimates, ~15 min extraction per model.
-SUBSAMPLE_N  = 3_000
+SUBSAMPLE_N  = 5_000
 
 # ── Probing ────────────────────────────────────────────────────────────────────
 PROBE_MAX_ITER = 1000
