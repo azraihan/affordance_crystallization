@@ -15,6 +15,8 @@ Figure 3 — fig_topk_efficiency:
 import json
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import matplotlib.ticker as mticker
 import seaborn as sns
 from pathlib import Path
 
@@ -76,7 +78,17 @@ def save_plot_data(name: str, data: dict):
 def figure1_layer_probe():
     plot_data = {}
 
-    fig, ax = plt.subplots(figsize=(6.5, 3.5))
+    # Three-panel broken y-axis:
+    #   top = 96–100.5% (plateau, zoomed)
+    #   mid = 80–96%    (early rise)
+    #   bot = 0–80%     (random baseline, compressed)
+    fig = plt.figure(figsize=(6.5, 6.0))
+    gs  = gridspec.GridSpec(3, 1, height_ratios=[3, 2, 1], hspace=0.08)
+    ax_top = fig.add_subplot(gs[0])   # 0.96–1.005
+    ax_mid = fig.add_subplot(gs[1])   # 0.80–0.96
+    ax_bot = fig.add_subplot(gs[2])   # 0.00–0.80
+
+    pct_fmt = mticker.FuncFormatter(lambda x, _: f"{x*100:.0f}")
 
     for model_key in MODELS:
         try:
@@ -98,34 +110,75 @@ def figure1_layer_probe():
 
         peak = data.get("peak_layer")
         plot_data[model_key] = {
-            "layers": layers,
-            "maps":   maps,
-            "peak_layer": peak,
-            "peak_mAP":   data.get("peak_mAP"),
+            "layers": layers, "maps": maps,
+            "peak_layer": peak, "peak_mAP": data.get("peak_mAP"),
         }
 
-        ax.plot(layers, maps, marker="o", markersize=4, linewidth=1.8,
-                color=MODEL_COLORS[model_key], label=MODEL_LABELS[model_key])
+        color = MODEL_COLORS[model_key]
+        plot_kw = dict(marker="o", markersize=4, linewidth=1.8, color=color)
+        ax_top.plot(layers, maps, label=MODEL_LABELS[model_key], **plot_kw)
+        ax_mid.plot(layers, maps, label="_nolegend_", **plot_kw)
+        ax_bot.plot(layers, maps, label="_nolegend_", **plot_kw)
 
-        if peak is not None:
+        if peak is not None and model_key != "random_vit":
             peak_map = data[f"layer_{peak}"]["mAP"]
-            ax.axvline(x=peak, color=MODEL_COLORS[model_key],
-                       linestyle="--", linewidth=0.8, alpha=0.6)
-            ax.annotate(
+            for ax in (ax_top, ax_mid, ax_bot):
+                ax.axvline(x=peak, color=color, linestyle="--",
+                           linewidth=0.8, alpha=0.6)
+            y_offset = 0.004 if model_key == "vjepa2" else 0.001
+            ax_top.annotate(
                 f"L{peak}",
                 xy=(peak, peak_map),
-                xytext=(peak + 0.3, peak_map + 0.01),
-                color=MODEL_COLORS[model_key], fontsize=7,
+                xytext=(peak + 0.3, peak_map + y_offset),
+                color=color, fontsize=7,
             )
 
-    ax.set_xlabel("Transformer Layer")
-    ax.set_ylabel("mAP (Affordance Classification)")
-    ax.set_title("Layer-wise Affordance Probe Accuracy")
-    ax.legend(loc="lower right")
-    ax.set_xlim(-0.5, 25)
-    ax.set_ylim(bottom=0)
-    ax.grid(True, alpha=0.3)
-    plt.tight_layout()
+    # Y-axis limits
+    ax_top.set_ylim(0.960, 1.005)
+    ax_mid.set_ylim(0.800, 0.960)
+    ax_bot.set_ylim(0.000, 0.800)
+
+    # Y-axis tick formatting
+    for ax in (ax_top, ax_mid, ax_bot):
+        ax.yaxis.set_major_formatter(pct_fmt)
+    ax_top.yaxis.set_major_locator(mticker.MultipleLocator(0.01))   # 1% ticks in plateau
+    ax_mid.yaxis.set_major_locator(mticker.MultipleLocator(0.04))   # 4% ticks in mid
+    ax_bot.set_yticks([0.0, 0.2, 0.4, 0.6])
+
+    # Broken-axis spine cosmetics
+    ax_top.spines["bottom"].set_visible(False)
+    ax_mid.spines["top"].set_visible(False)
+    ax_mid.spines["bottom"].set_visible(False)
+    ax_bot.spines["top"].set_visible(False)
+    ax_top.tick_params(axis="x", which="both", bottom=False, labelbottom=False)
+    ax_mid.tick_params(axis="x", which="both", bottom=False, labelbottom=False)
+    ax_bot.xaxis.tick_bottom()
+
+    # Diagonal break marks at top/mid boundary
+    d = 0.02
+    bkw = dict(color="k", clip_on=False, linewidth=0.8)
+    ax_top.plot((-d, +d), (-d, +d), transform=ax_top.transAxes, **bkw)
+    ax_top.plot((1-d, 1+d), (-d, +d), transform=ax_top.transAxes, **bkw)
+    ax_mid.plot((-d, +d), (1-d, 1+d), transform=ax_mid.transAxes, **bkw)
+    ax_mid.plot((1-d, 1+d), (1-d, 1+d), transform=ax_mid.transAxes, **bkw)
+    # Diagonal break marks at mid/bot boundary
+    ax_mid.plot((-d, +d), (-d, +d), transform=ax_mid.transAxes, **bkw)
+    ax_mid.plot((1-d, 1+d), (-d, +d), transform=ax_mid.transAxes, **bkw)
+    ax_bot.plot((-d, +d), (1-d, 1+d), transform=ax_bot.transAxes, **bkw)
+    ax_bot.plot((1-d, 1+d), (1-d, 1+d), transform=ax_bot.transAxes, **bkw)
+
+    # Labels
+    ax_bot.set_xlabel("Transformer Layer")
+    ax_top.set_title("Layer-wise Affordance Probe Accuracy")
+    fig.text(0.02, 0.5, "mAP (%)", va="center", rotation="vertical", fontsize=11)
+    handles, labels = ax_top.get_legend_handles_labels()
+    ax_top.legend(handles, labels, loc="upper left")
+
+    for ax in (ax_top, ax_mid, ax_bot):
+        ax.set_xlim(-0.5, 25)
+        ax.grid(True, alpha=0.3)
+
+    fig.subplots_adjust(left=0.10, right=0.97, top=0.93, bottom=0.08)
 
     save_plot_data("fig_layer_probe", plot_data)
     save_figure(fig, "fig_layer_probe")

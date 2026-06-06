@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\caption{Layer-wise linear probe at each model's peak layer. Values are Average Precision (\%). Bold = best per column.}
+\label{tab:main_results}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{l c c c c c c c c c}
+\toprule
+Model & Peak Layer & \textit{grasp} & \textit{cut} & \textit{scoop} & \textit{wrap-grasp} & \textit{poke} & \textit{support} & \textit{contain} & mAP \\
+\midrule
+V-JEPA 2 (ViT-L) & 19 & 99.6 & \textbf{99.8} & 98.5 & 100.0 & \textbf{100.0} & \textbf{100.0} & \textbf{100.0} & 99.7 \\
+V-JEPA 2.1 (ViT-L) & 19 & 99.3 & 99.1 & 95.3 & 99.9 & 98.4 & 96.4 & \textbf{100.0} & 98.3 \\
+DINOv2 (ViT-L) & 23 & \textbf{99.8} & 99.5 & \textbf{100.0} & \textbf{100.0} & \textbf{100.0} & \textbf{100.0} & \textbf{100.0} & \textbf{99.9} \\
+Random ViT-L & 24 & 97.1 & 92.5 & 65.9 & 87.6 & 44.9 & 61.5 & 80.8 & 75.8 \\
+\bottomrule
+\end{tabular}}
+\end{table}

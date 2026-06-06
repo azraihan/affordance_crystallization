@@ -1,10 +1,10 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-V-JEPA~2.1's intermediate-layer supervision causes affordance features to crystallize
-earlier and in a sparser set of heads than V-JEPA~2.
-Pruning to the top-3 heads at the peak layer achieves a $4{\times}$ attention compute
-reduction with minimal mAP loss, offering a practical path to efficient affordance-aware
-robot perception.
-Future work should examine whether the same heads generalize across affordance datasets
-and embodiments.
+Both V-JEPA models crystallize affordance signal four layers earlier (layer~19) than
+DINOv2 (layer~23), attributable to their video-domain predictive objectives.
+Within the JEPA family, V-JEPA~2.1's intermediate supervision further improves
+early-layer representation quality ($+7.2$~pp mAP at layer~2) without shifting peak depth.
+Pruning to the top-3 heads at each model's peak layer achieves a ${\approx}5.3{\times}$
+theoretical FLOP reduction in peak-layer attention with ${\leq}0.1\%$ mAP loss, offering
+a practical path to efficient affordance-aware robot perception.

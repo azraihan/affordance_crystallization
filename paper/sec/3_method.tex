@@ -3,27 +3,20 @@
 
 \paragraph{Layer-wise probing.}
 For a frozen ViT-L encoder ($L{=}24$ blocks, $D{=}1024$, $H{=}16$ heads), we extract
-representations at each of 25 positions ($\ell{=}0$: patch embedding; $\ell{=}1\ldots24$:
-block outputs).
-DINOv2 uses the CLS token; JEPA models use mean-pooled tokens (no CLS token present).
-A one-vs-rest logistic regression ($C{=}1$, L-BFGS, 1000 iter) is trained per layer to
-predict the 7-class binary affordance label, and mean Average Precision (mAP) is reported
-on the held-out test set.
+representations at 25 positions ($\ell{=}0$: patch embedding; $\ell{=}1\ldots24$: block outputs).
+DINOv2 uses the CLS token; JEPA models use mean-pooled patch tokens.
+A one-vs-rest logistic regression ($C{=}1$, L-BFGS) is trained per layer to predict each of the
+7 binary affordance labels; mAP is reported on the held-out test set.
 
 \paragraph{Attention head ablation.}
-At each model's peak layer $\ell^*$, we ablate head $h$ by zeroing its $d_h{=}64$
-output columns \emph{before} the output projection via a \texttt{attn.proj} forward
-pre-hook, following Michel et al.~\cite{michel2019sixteen}.
-Features are re-extracted and a fresh probe is trained; importance is
+At peak layer $\ell^*$, we ablate head $h$ by zeroing its $d_h{=}64$ output columns before
+the output projection~\cite{michel2019sixteen}; importance is
 $\Delta_h = \text{mAP}_\text{full} - \text{mAP}_{-h}$.
-We also sweep top-$k$ head subsets to quantify the efficiency--accuracy tradeoff.
+We sweep top-$k$ head subsets to quantify the efficiency--accuracy tradeoff; concentration is measured as each head's share of the total positive $\Delta_h$ mass.
 
 \paragraph{Experimental setup.}
-UMD Part Affordance Dataset~\cite{myers2015affordance}: 80/10/10 stratified split by
-object category, $224{\times}224$ images with ImageNet normalization.
-A label is positive if ${>}0.1\%$ of pixels carry it (${\approx}307$ px in $480{\times}640$),
-reflecting UMD's part-level annotation density.
-V-JEPA~2 and V-JEPA~2.1 use official ViT-L checkpoints; static images are replicated
-$T{=}8$ times as pseudo-video input.
-A randomly initialized ViT-L establishes the chance-level floor.
-All encoders are \textbf{frozen}; only probe weights are trained (single NVIDIA P100, 16\,GB).
+UMD Part Affordance Dataset~\cite{myers2015affordance} (7 affordance classes): stratified 2,000-image subsample
+(80/10/10 split, $224{\times}224$, ImageNet normalization).
+Static images are replicated $T{=}8$ times as pseudo-video for JEPA models.
+A random ViT-L establishes the chance-level floor.
+All encoders are \textbf{frozen}; only probe weights are trained.
