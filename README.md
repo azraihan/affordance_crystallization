@@ -3,9 +3,9 @@
 
 **Abrar Zahin Raihan** · **Aurchi Chowdhury** — Bangladesh University of Engineering and Technology
 
-[![7th EAI@CVPR2026 | Coming Soon](https://img.shields.io/badge/7th%20EAI%40CVPR2026-Coming%20Soon-blue?style=flat-square)](https://embodied-ai.org/cvpr2026/)
+[![7th EAI@CVPR2026 | Paper](https://img.shields.io/badge/7th%20EAI%40CVPR2026-Paper-blue?style=flat-square)](https://embodied-ai.org/papers/2026/32_Where_Do_Affordances_Crysta.pdf)
 
-Accepted at the [7th Embodied AI Workshop @ CVPR 2026](https://embodied-ai.org/cvpr2026/) as a **poster** (non-archival submission). The paper will be available on the workshop website soon.
+Accepted at the [7th Embodied AI Workshop @ CVPR 2026](https://embodied-ai.org/cvpr2026/) as a **poster** (non-archival submission). 📄 **[Read the paper (PDF)](https://embodied-ai.org/papers/2026/32_Where_Do_Affordances_Crysta.pdf)**
 
 ---
 
